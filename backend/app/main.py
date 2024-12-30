@@ -1,129 +1,144 @@
-# app/main.py
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict
-import json
+import os
 
 app = FastAPI()
 
-# CORS setup
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],  # For development only
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Data Models
-class Topic(BaseModel):
-    id: int
-    title: str
-    content: str
-    key_points: List[str]
+# Mount static files
+app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 
-class Chapter(BaseModel):
-    id: int
-    title: str
-    topics: List[Topic]
+# Templates
+templates = Jinja2Templates(directory="frontend/templates")
 
-class StudentResponse(BaseModel):
-    question_id: int
-    answer: str
-
-class QuizResult(BaseModel):
-    score: int
-    feedback: str
-    next_topic_recommendation: Optional[str]
-
-# API Endpoints
-@app.get("/api/subjects")
-async def get_subjects():
-    return {
-        "subjects": [
-            {"id": "science", "name": "Science"},
-            {"id": "social", "name": "Social"},
-            {"id": "maths", "name": "maths"}
-            # Add more subjects
-        ]
-    }
-
-@app.get("/api/chapters/{subject}")
-async def get_chapters(subject: str):
-    # You'll load this from your database
-    return {
+# Sample data - Replace with your database
+subjects_data = {
+    "science": {
+        "id": "science",
+        "name": "Science",
+        "grade": "Class 10",
         "chapters": [
             {
-                "id": 1,
+                "id": "ch1",
                 "title": "Chemical Reactions",
-                "description": "Learn about different types of chemical reactions..."
+                "description": "Learn about different types of chemical reactions",
+                "topics": [
+                    {
+                        "id": "topic1",
+                        "title": "Introduction to Chemical Reactions",
+                        "content": "A chemical reaction is a process that leads to the chemical transformation of one set of chemical substances to another."
+                    },
+                    {
+                        "id": "topic2",
+                        "title": "Types of Chemical Reactions",
+                        "content": "Chemical reactions can be classified into several types including combination, decomposition, displacement, and double displacement."
+                    }
+                ]
             }
-            # Add more chapters
         ]
-    }
-
-@app.get("/api/chapter/{chapter_id}/topics")
-async def get_chapter_topics(chapter_id: int):
-    # Load topics for the chapter
-    return {
-        "topics": [
+    },
+    "social": {
+        "id": "social",
+        "name": "Social Science",
+        "grade": "Class 10",
+        "chapters": [
             {
-                "id": 1,
-                "title": "Introduction to Chemical Reactions",
-                "estimated_time": "15 mins"
+                "id": "ch2",
+                "title": "Indian National Movement",
+                "description": "Study the history of Indian independence movement",
+                "topics": [
+                    {
+                        "id": "topic3",
+                        "title": "Early Nationalist Movements",
+                        "content": "The early nationalist movements in India laid the foundation for the independence struggle."
+                    }
+                ]
             }
-            # Add more topics
         ]
     }
+}
+
+# Pydantic models
+class Question(BaseModel):
+    question: str
+    context: Optional[Dict] = None
+
+class Answer(BaseModel):
+    answer: str
+    sources: List[str] = []
+
+# Frontend routes
+@app.get("/", response_class=HTMLResponse)
+async def read_root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/chapter/{chapter_id}", response_class=HTMLResponse)
+async def read_chapter(request: Request, chapter_id: str):
+    return templates.TemplateResponse("chapter.html", {"request": request, "chapter_id": chapter_id})
+
+# API routes
+@app.get("/api/subjects")
+async def get_subjects():
+    return [
+        {"id": subject_id, "name": data["name"], "grade": data["grade"]}
+        for subject_id, data in subjects_data.items()
+    ]
+
+@app.get("/api/chapters/{subject_id}")
+async def get_chapters(subject_id: str):
+    if subject_id not in subjects_data:
+        raise HTTPException(status_code=404, detail="Subject not found")
+    return subjects_data[subject_id]["chapters"]
+
+@app.get("/api/chapter/{chapter_id}")
+async def get_chapter(chapter_id: str):
+    for subject in subjects_data.values():
+        for chapter in subject["chapters"]:
+            if chapter["id"] == chapter_id:
+                return chapter
+    raise HTTPException(status_code=404, detail="Chapter not found")
 
 @app.get("/api/topic/{topic_id}")
-async def get_topic_content(topic_id: int):
-    # Load topic content with teaching material
-    return {
-        "content": "Content here...",
-        "key_points": ["Point 1", "Point 2"],
-        "examples": ["Example 1", "Example 2"]
-    }
+async def get_topic(topic_id: str):
+    for subject in subjects_data.values():
+        for chapter in subject["chapters"]:
+            for topic in chapter["topics"]:
+                if topic["id"] == topic_id:
+                    return topic
+    raise HTTPException(status_code=404, detail="Topic not found")
 
-@app.post("/api/topic/{topic_id}/question")
-async def ask_topic_question(topic_id: int, question: dict):
-    # Process question within topic context
-    return {
-        "answer": "Answer based on topic context...",
-        "related_concepts": ["concept1", "concept2"]
-    }
+@app.post("/api/tutor/ask")
+async def ask_question(question: Question):
+    # This is where you'd integrate your AI model
+    # For now, return a sample response
+    return Answer(
+        answer="This is a sample answer to your question. In a real implementation, this would be generated by an AI model.",
+        sources=["Sample Source 1", "Sample Source 2"]
+    )
 
-@app.post("/api/quiz/generate/{chapter_id}")
-async def generate_quiz(chapter_id: int):
-    # Generate adaptive quiz based on covered topics
-    return {
-        "questions": [
-            {
-                "id": 1,
-                "question": "What happens in a reduction reaction?",
-                "type": "multiple_choice",
-                "options": ["A", "B", "C", "D"]
-            }
-        ]
-    }
-
-@app.post("/api/quiz/evaluate")
-async def evaluate_quiz(responses: List[StudentResponse]):
-    # Evaluate quiz and provide feedback
-    return {
-        "score": 85,
-        "feedback": "Good understanding of basic concepts...",
-        "weak_areas": ["Advanced oxidation concepts"],
-        "recommended_topics": ["Topic 3.2"]
-    }
-
-@app.post("/api/book/question")
-async def ask_book_question(question: dict):
-    # RAG-based full book Q&A
-    return {
-        "answer": "RAG generated answer...",
-        "sources": ["Chapter 2", "Chapter 4"],
-        "confidence": 0.95
-    }
+# File structure setup
+def setup_file_structure():
+    """Create necessary directories if they don't exist"""
+    directories = [
+        "frontend/static/css",
+        "frontend/static/js",
+        "frontend/static/img",
+        "frontend/templates"
+    ]
     
+    for directory in directories:
+        os.makedirs(directory, exist_ok=True)
+
