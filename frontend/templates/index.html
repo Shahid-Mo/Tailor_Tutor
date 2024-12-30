@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Learning Assistant</h1>
+            <nav>
+                <button onclick="showSection('subjects')" class="nav-btn active">Chapter Learning</button>
+                <button onclick="showSection('openBook')" class="nav-btn">Ask Any Question</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Subject Selection Section -->
+            <section id="subjects" class="active">
+                <h2>Select Your Subject</h2>
+                <div class="subject-grid">
+                    <div class="subject-card" onclick="selectSubject('science')">
+                        <h3>Science</h3>
+                        <p>Class 10</p>
+                    </div>
+                    <div class="subject-card" onclick="selectSubject('social')">
+                        <h3>Social Science</h3>
+                        <p>Class 10</p>
+                    </div>
+                </div>
+
+                <!-- Chapter list will be dynamically populated -->
+                <div id="chapter-list" class="chapter-list hidden"></div>
+            </section>
+
+            <!-- Open Book Section -->
+            <section id="openBook" class="hidden">
+                <h2>Ask Any Question</h2>
+                <div class="search-container">
+                    <textarea id="question" placeholder="Type your question here..."></textarea>
+                    <button onclick="askQuestion()">Ask</button>
+                </div>
+                <div id="answer" class="answer-container"></div>
+            </section>
+        </main>
+    </div>
+    <script src="../static/js/api.js"></script>
+    <script src="../static/js/main.js"></script>
+</body>
+</html>
