@@ -1,38 +1,21 @@
-// chapter.js
+// static/js/chapter.js
 let currentTopicIndex = 0;
 let topics = [];
-let chapterId = null;
 
-// Initialize chapter page
-async function initChapterPage() {
-    // Get chapter ID from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    chapterId = urlParams.get('id');
-    
-    if (!chapterId) {
-        showError('No chapter specified');
-        return;
-    }
-
+async function initChapter() {
     try {
-        // Fetch chapter content
-        const response = await fetch(`${API_URL}/chapter/${chapterId}`);
+        const response = await fetch(`/api/chapter/${CHAPTER_ID}`);
         const chapterData = await response.json();
         
-        // Set chapter title
         document.getElementById('chapter-title').textContent = chapterData.title;
-        
-        // Store topics
         topics = chapterData.topics;
         
-        // Display first topic
         if (topics.length > 0) {
             displayTopic(0);
         } else {
             showError('No topics available in this chapter');
         }
         
-        // Update navigation buttons
         updateNavigation();
     } catch (error) {
         console.error('Error initializing chapter:', error);
@@ -40,14 +23,14 @@ async function initChapterPage() {
     }
 }
 
-// Display topic content
 async function displayTopic(index) {
     if (index < 0 || index >= topics.length) {
         return;
     }
 
     try {
-        const topicContent = await fetchTopicContent(topics[index].id);
+        const response = await fetch(`/api/topic/${topics[index].id}`);
+        const topicContent = await response.json();
         const contentArea = document.getElementById('content-area');
         
         contentArea.innerHTML = `
@@ -57,17 +40,15 @@ async function displayTopic(index) {
             </div>
         `;
 
-        // Update progress bar
         updateProgress(index);
-        
         currentTopicIndex = index;
+        updateNavigation();
     } catch (error) {
         console.error('Error displaying topic:', error);
         showError('Failed to load topic content');
     }
 }
 
-// Navigation functions
 function nextTopic() {
     if (currentTopicIndex < topics.length - 1) {
         displayTopic(currentTopicIndex + 1);
@@ -80,13 +61,11 @@ function previousTopic() {
     }
 }
 
-// Update progress bar
 function updateProgress(index) {
     const progress = ((index + 1) / topics.length) * 100;
     document.getElementById('progress').style.width = `${progress}%`;
 }
 
-// Update navigation buttons
 function updateNavigation() {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
@@ -95,13 +74,11 @@ function updateNavigation() {
     nextBtn.disabled = currentTopicIndex === topics.length - 1;
 }
 
-// Show error message
 function showError(message) {
     const contentArea = document.getElementById('content-area');
     contentArea.innerHTML = `<div class="error-message">${message}</div>`;
 }
 
-// Ask topic-specific question
 async function askTopicQuestion() {
     const questionContainer = document.getElementById('questions-container');
     const textarea = questionContainer.querySelector('textarea');
@@ -112,17 +89,27 @@ async function askTopicQuestion() {
     }
 
     try {
-        const response = await askQuestion(question, {
-            chapterId: chapterId,
-            topicId: topics[currentTopicIndex].id
+        const response = await fetch('/api/tutor/ask', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                question: question,
+                context: {
+                    chapterId: CHAPTER_ID,
+                    topicId: topics[currentTopicIndex].id
+                }
+            }),
         });
         
-        // Display answer
+        const result = await response.json();
+        
         const answerElement = document.createElement('div');
         answerElement.className = 'answer';
         answerElement.innerHTML = `
             <p><strong>Q: </strong>${question}</p>
-            <p><strong>A: </strong>${response.answer}</p>
+            <p><strong>A: </strong>${result.answer}</p>
         `;
         
         questionContainer.appendChild(answerElement);
@@ -133,5 +120,4 @@ async function askTopicQuestion() {
     }
 }
 
-// Initialize page when loaded
-document.addEventListener('DOMContentLoaded', initChapterPage);
+document.addEventListener('DOMContentLoaded', initChapter);

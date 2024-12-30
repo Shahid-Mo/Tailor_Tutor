@@ -3,50 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Tutor</title>
-    <link rel="stylesheet" href="../static/css/style.css">
+    <title>AI Tutor - Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>AI Learning Assistant</h1>
             <nav>
-                <button onclick="showSection('subjects')" class="nav-btn active">Chapter Learning</button>
-                <button onclick="showSection('openBook')" class="nav-btn">Ask Any Question</button>
+                <a href="/subjects" class="nav-btn">Start Learning</a>
+                <a href="/ask" class="nav-btn">Ask Any Question</a>
             </nav>
         </header>
-
         <main>
-            <!-- Subject Selection Section -->
-            <section id="subjects" class="active">
-                <h2>Select Your Subject</h2>
-                <div class="subject-grid">
-                    <div class="subject-card" onclick="selectSubject('science')">
-                        <h3>Science</h3>
-                        <p>Class 10</p>
-                    </div>
-                    <div class="subject-card" onclick="selectSubject('social')">
-                        <h3>Social Science</h3>
-                        <p>Class 10</p>
-                    </div>
+            <section class="welcome">
+                <h2>Welcome to AI Tutor</h2>
+                <p>Choose how you want to learn:</p>
+                <div class="option-cards">
+                    <a href="/subjects" class="card">
+                        <h3>Structured Learning</h3>
+                        <p>Learn through organized chapters and topics</p>
+                    </a>
+                    <a href="/ask" class="card">
+                        <h3>Open Learning</h3>
+                        <p>Ask any question and get instant answers</p>
+                    </a>
                 </div>
-
-                <!-- Chapter list will be dynamically populated -->
-                <div id="chapter-list" class="chapter-list hidden"></div>
-            </section>
-
-            <!-- Open Book Section -->
-            <section id="openBook" class="hidden">
-                <h2>Ask Any Question</h2>
-                <div class="search-container">
-                    <textarea id="question" placeholder="Type your question here..."></textarea>
-                    <button onclick="askQuestion()">Ask</button>
-                </div>
-                <div id="answer" class="answer-container"></div>
             </section>
         </main>
     </div>
-    <script src="../static/js/api.js"></script>
-    <script src="../static/js/main.js"></script>
 </body>
 </html>
+

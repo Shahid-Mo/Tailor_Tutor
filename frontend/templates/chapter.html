@@ -3,29 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chapter Learning - AI Tutor</title>
-    <link rel="stylesheet" href="../static/css/style.css">
+    <title>AI Tutor - Chapter</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
             <h1 id="chapter-title">Chapter Title</h1>
+            <nav>
+                <a href="/" class="nav-btn">Home</a>
+                <a href="/subjects" class="nav-btn">Subjects</a>
+            </nav>
             <div class="progress-bar">
                 <div id="progress" class="progress"></div>
             </div>
         </header>
-
         <main class="chapter-content">
-            <div id="content-area" class="content-area">
-                <!-- Content will be loaded here -->
-            </div>
-
+            <div id="content-area" class="content-area"></div>
             <div class="interaction-area">
-                <div id="questions-container" class="questions hidden">
+                <div id="questions-container" class="questions">
                     <textarea placeholder="Ask a question about this topic..."></textarea>
                     <button onclick="askTopicQuestion()">Ask</button>
                 </div>
-
                 <div class="navigation">
                     <button onclick="previousTopic()" id="prev-btn">Previous</button>
                     <button onclick="nextTopic()" id="next-btn">Next</button>
@@ -33,7 +32,9 @@
             </div>
         </main>
     </div>
-    <script src="../static/js/api.js"></script>
-    <script src="../static/js/chapter.js"></script>
+    <script>
+        const CHAPTER_ID = "{{ chapter_id }}";
+    </script>
+    <script src="{{ url_for('static', path='js/chapter.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor - Chapters</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{ subject_name }} Chapters</h1>
+            <nav>
+                <a href="/" class="nav-btn">Home</a>
+                <a href="/subjects" class="nav-btn">Subjects</a>
+            </nav>
+        </header>
+        <main>
+            <div id="chapters-list" class="chapters-list"></div>
+        </main>
+    </div>
+    <script>
+        const SUBJECT_ID = "{{ subject_id }}";
+    </script>
+    <script src="{{ url_for('static', path='js/chapters.js') }}"></script>
+</body>
+</html>
