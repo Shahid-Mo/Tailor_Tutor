@@ -1,2 +1,10 @@
 fastapi[standard]
 pydantic-settings
+langchain
+pinecone-client
+openai
+langchain-community
+langchain-openai
+groq
+langchain-groq
+python-dotenv
