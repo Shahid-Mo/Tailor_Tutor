@@ -8,3 +8,5 @@ langchain-openai
 groq
 langchain-groq
 python-dotenv
+sqlalchemy
+alembic # for database migrations
